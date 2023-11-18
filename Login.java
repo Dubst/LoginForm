@@ -10,13 +10,12 @@ public class Login extends JFrame implements ActionListener {
     JLabel school_id, password;
     JTextField t_email;
     JPasswordField t_password;
-
     JButton b_enter, backButton;
+    User user;
 
-    public Login(String choice) {
-
+    public Login(String choice, User user) {
+        this.user = user;
         this.choice = choice;
-
         // used for displaying label to not affect the choice variable name
         String choiceDisplay;
         if (choice == "EventManager") {
@@ -53,11 +52,10 @@ public class Login extends JFrame implements ActionListener {
         // back button
         backButton = new JButton("Go Back");
         backButton.addActionListener(this);
+
         // back button design
-        // backButton.setIcon(backButtonIcon);
         backButton.setFocusable(false);
         backButton.setFont(new Font("Montserrat", Font.BOLD, 15));
-        // backButton.setIconTextGap(10);
         backButton.setForeground(new Color(68, 93, 72));
         backButton.setBackground(new Color(214, 204, 153));
         backButton.setPreferredSize(new Dimension(130, 30));
@@ -83,12 +81,14 @@ public class Login extends JFrame implements ActionListener {
         t_email.setForeground(new Color(68, 93, 72));
         t_email.setBackground(new Color(214, 204, 153));
         t_email.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        t_email.setFont(new Font("Montserrat", Font.BOLD, 13));
 
         // password textfield design
         t_password.setPreferredSize(new Dimension(300, 30));
         t_password.setForeground(new Color(68, 93, 72));
         t_password.setBackground(new Color(214, 204, 153));
         t_password.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        t_password.setFont(new Font("Montserrat", Font.BOLD, 13));
 
         // log in or enter design
         b_enter.setFocusable(false);
@@ -102,13 +102,14 @@ public class Login extends JFrame implements ActionListener {
         this.setLayout(new BoxLayout(getContentPane(), BoxLayout.PAGE_AXIS));
         this.setSize(600, 800);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        this.setLocation(500, 300);
+        this.setLocation(500, 200);
         this.setTitle("Log In");
         this.setIconImage(logo.getImage());
         this.setResizable(false);
         this.getContentPane().setBackground(new Color(68, 93, 72));
 
         // add components
+
         this.add(backBackPannel);
         this.add(headingLabel);
         this.add(inputPanel);
@@ -141,7 +142,6 @@ public class Login extends JFrame implements ActionListener {
         this.pack();
         this.setVisible(true);
 
-
     }
 
     @Override
@@ -151,30 +151,43 @@ public class Login extends JFrame implements ActionListener {
             String email = t_email.getText();
             String password = String.valueOf(t_password.getPassword());
 
-
             try {
                 Class.forName("com.mysql.cj.jdbc.Driver");
-
 
                 Connection con = DriverManager.getConnection("jdbc:mysql://localhost/pfbaliwis", "root", "");
 
                 PreparedStatement pStatement = con
-                        .prepareStatement("SELECT email, password FROM User WHERE email = ? AND password = ?");
+                        .prepareStatement(
+                                "SELECT * FROM User WHERE email = ? AND password = ? AND choice = ?");
                 pStatement.setString(1, email);
                 pStatement.setString(2, password);
+                pStatement.setString(3, choice);
 
                 ResultSet rs = pStatement.executeQuery();
 
-
-
-                if(rs.next() == true){
+                if (rs.next() == true) {
+                    String first_name = rs.getString("f_name");
+                    String last_name = rs.getString("l_name");
+                    String nickname = rs.getString("nickname");
+                    String b_date = rs.getString("bdate");
+                    String gender = rs.getString("gender");
+                    String profession = rs.getString("profession");
+                    String country = rs.getString("country");
+                    String choice = rs.getString("choice");
+                    this.user = new User(first_name, last_name, nickname, b_date, profession, gender,
+                            country, choice);
+                    this.user.setEmail(email);
+                    this.user.setPassword(password);
                     this.dispose();
                     System.out.println("Valid");
-                    new Homepage(this.choice, email);
-                }
-                else{
+                    new Homepage(user);
 
+                } else {
+                    JOptionPane.showMessageDialog(null, "Email doesn't exist or password does not match.",
+                            "Login unsuccesful", JOptionPane.ERROR_MESSAGE);
                     System.out.println("Invalid");
+                    this.dispose();
+                    new Login(this.choice, user);
 
                 }
             } catch (Exception e) {

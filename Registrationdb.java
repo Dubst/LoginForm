@@ -1,6 +1,6 @@
 import java.sql.*;
 
-public class WorkshopDb {
+public class Registrationdb {
     protected int workshop_code;
     protected String manager_email;
     protected String title;
@@ -11,7 +11,7 @@ public class WorkshopDb {
     protected String host;
     protected String org;
 
-    public WorkshopDb(String manager_email, String title, String description, String date,
+    public Registrationdb(String manager_email, String title, String description, String date,
             String venue, String speakers, String host, String org) {
         this.manager_email = manager_email;
         this.title = title;
